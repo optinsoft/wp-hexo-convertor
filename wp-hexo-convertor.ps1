@@ -22,7 +22,7 @@ if ([string]::IsNullOrEmpty($sourceDirectory)) {
 Write-Output "source directory: $sourceDirectory"
 
 $categoryPathTitles = "`n"
-$postCategoryTitles = "`nhexo"
+$postCategoryTitles = "`n"
 
 $sourceCatRegEx = '^(cat=[1-9][0-9]*)(&.*)?$'
 Get-ChildItem -Path $sourceDirectory | Where-Object {$_.Name -match $sourceCatRegEx } | ForEach-Object {
