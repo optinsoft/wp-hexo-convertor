@@ -12,6 +12,10 @@ if ([string]::IsNullOrEmpty($sourceDirectory)) {
 
 if ([string]::IsNullOrEmpty($sourceDirectory)) {
     Write-Output "Usage: .\wp-hexo-convertor.ps1 sourceDirectory"
+    Write-Output "`r`nYou can specify source directory in wp-hexo-convertor.json, example:"
+    Write-Output "{"
+    Write-Output "    ""SourceDirectory"": ""c:\\my_wp_blog_path"""
+    Write-Output "}"
     exit
 }
 
