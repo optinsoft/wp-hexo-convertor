@@ -54,6 +54,8 @@ Get-ChildItem -Path $sourceDirectory | Where-Object {$_.Name -match $sourceCatRe
     }
 }
 
+$tagPathText = "`n"
+
 Get-ChildItem -Path $sourceDirectory | Where-Object {$_.Name -match '^p=[1-9][0-9]*$' } | ForEach-Object {
     $sourcePostPath = $_.Name
     Write-Output "source post: $sourcePostPath"
@@ -82,8 +84,13 @@ Get-ChildItem -Path $sourceDirectory | Where-Object {$_.Name -match '^p=[1-9][0-
             Select-String -InputObject $line -Pattern $tagRegex -AllMatches | ForEach-Object {
                 foreach($m in $_.Matches) {
                     $tagText = $m.Groups[3].Value
-                    Write-Output "tag: $tagText"
+                    Write-Output "post tag: $tagText"
                     $tags += "`r`n  - ""$tagText"""
+                    Select-String -InputObject $m.Value -Pattern 'href="\/blog\/(tag=[^"\/]*)/"' | ForEach-Object {
+                        $tagPath = $_.Matches.Groups[1].Value
+                        Write-Output "post tag path: $tagPath"
+                        $tagPathText += "$tagPath/$tagText`n"
+                    }
                 }
             }
         }
@@ -207,8 +214,15 @@ Get-ChildItem -Path $sourceDirectory | Where-Object {$_.Name -match $sourceTagRe
     $sourceTagPath = $_.Name
     Select-String -InputObject $sourceTagPath -Pattern $sourceTagRegex | ForEach-Object { 
         $sourceTagValue = $_.Matches.Groups[1].Value
-        Write-Output "source tag: $sourceTagValue, path: $sourceTagPath"
-        $redirecContent = "---`r`ntitle: ""$sourceTagValue""`r`nredirect: /tags/$sourceTagValue/`r`n---`r`n"
+        $m = $tagPathText | Select-String -Pattern "\ntag=$sourceTagValue\/([^\n]+)\n"
+        if ($m) {
+            $targetTag = $m.Matches.Groups[1].Value -replace '\s', '-'
+        }
+        else {
+            $targetTag = $sourceTagValue
+        }
+        Write-Output "source tag: $sourceTagValue, path: $sourceTagPath, target tag: $targetTag"
+        $redirecContent = "---`r`ntitle: ""$sourceTagValue""`r`nredirect: /tags/$targetTag/`r`n---`r`n"
         $redirectDir = "source\$sourceTagPath"
         $redirectFilePath = "$redirectDir\index.md"
         if (-not (Test-Path -Path $redirectDir -PathType Container)) {
